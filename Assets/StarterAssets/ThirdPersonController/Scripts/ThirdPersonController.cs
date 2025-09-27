@@ -127,8 +127,12 @@ namespace StarterAssets
 
             if (_hasAnimator)
             {
-                _animator.SetFloat(_animIDHorizontal, _input.move.x);
-                _animator.SetFloat(_animIDVertical, _input.move.y);
+                // Dead zone: evita que se envíen valores muy pequeños al Animator
+                float h = Mathf.Abs(_input.move.x) < 0.1f ? 0f : _input.move.x;
+                float v = Mathf.Abs(_input.move.y) < 0.1f ? 0f : _input.move.y;
+
+                _animator.SetFloat(_animIDHorizontal, h);
+                _animator.SetFloat(_animIDVertical, v);
             }
         }
 
