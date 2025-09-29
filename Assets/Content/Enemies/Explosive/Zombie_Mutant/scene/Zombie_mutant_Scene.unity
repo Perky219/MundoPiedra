@@ -501,10 +501,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 2.2
-  changeDirTime: 2
-  patrolCenter: {x: 6.0184, y: 1, z: 5.384}
-  patrolRadius: 3
-  explosionDelay: 5
+  stepDistance: 1
+  explosionDelay: 2
   explosionRadius: 4
   explosionEffect: {fileID: 0}
   speedParam: Speed
@@ -521,12 +519,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 2.2
-  changeDirTime: 2
-  patrolCenter: {x: 6.0184, y: 1, z: 5.384}
-  patrolRadius: 3
-  explosionDelay: 5
+  stepDistance: 1
+  explosionDelay: 2
   explosionRadius: 4
-  explosionEffect: {fileID: 0}
+  explosionEffect: {fileID: 560014183069458990, guid: 621e45f610d611746802ad828f66b094,
+    type: 3}
   speedParam: Speed
 --- !u!1 &1161645462
 GameObject:
