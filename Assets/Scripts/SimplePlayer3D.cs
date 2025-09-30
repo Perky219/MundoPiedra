@@ -1,0 +1,26 @@
+using UnityEngine;
+
+[RequireComponent(typeof(CharacterController))]
+public class SimplePlayer3D : MonoBehaviour
+{
+    public float speed = 4f;
+    public float gravity = -9.81f;
+
+    CharacterController cc;
+    Vector3 velocity;
+
+    void Awake() => cc = GetComponent<CharacterController>();
+
+    void Update()
+    {
+        float h = Input.GetAxisRaw("Horizontal");
+        float v = Input.GetAxisRaw("Vertical");
+        Vector3 move = new Vector3(h, 0f, v).normalized * speed;
+
+        cc.Move(move * Time.deltaTime);
+
+        if (cc.isGrounded && velocity.y < 0) velocity.y = -2f;
+        velocity.y += gravity * Time.deltaTime;
+        cc.Move(velocity * Time.deltaTime);
+    }
+}
