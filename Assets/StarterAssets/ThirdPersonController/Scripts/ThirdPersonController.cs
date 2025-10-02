@@ -119,7 +119,6 @@ namespace StarterAssets
             float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
             if (_input.move == Vector2.zero) targetSpeed = 0.0f;
 
-            // El personaje ya no gira, siempre mira al frente
             Vector3 move = transform.right * _input.move.x + transform.forward * _input.move.y;
 
             _controller.Move(move.normalized * (targetSpeed * Time.deltaTime) +

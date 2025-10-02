@@ -1,0 +1,41 @@
+Third-Party Content and Licenses
+
+This asset package contains third-party content used under the appropriate licenses. Details are as follows:
+
+1. **Fatty Poly Turret Free**  
+   - Source: https://assetstore.unity.com/packages/3d/props/weapons/fatty-poly-turret-free-155251  
+   - Publisher: Fatty War (https://id3644.wixsite.com/fattygames)  
+   - License: Per the terms provided by the Unity Asset Store at the time of download. Please review the original asset page for more details.
+
+2. **M16 Rifle Shots Sound**  
+   - Source: https://freesound.org/s/187677/
+   - Author: qubodup 
+   - License: Creative Commons 0
+(https://creativecommons.org/publicdomain/zero/1.0/)  
+   - No attribution required.
+
+By using this asset package, you agree to comply with the respective licenses provided for each third-party component.
+
+******************************************************************
+the turret free asset readme.txt content:
+Fatty Poly Turret Free. (2019/9/29 - by Fatty War, id3644@gmail.com)
+
+This is a turret pack of mortar and cannon type.
+Is a polygon art pack, the perfect bundle of Ranged Weapon, greatly optimized and mobile friendly.
+
+The full version is ready : http://u3d.as/1DsT
+
+Features:
+This is a demo version of fatty poly turret.
+- 2 types of turret. (cannon, mortar)
+- Each turret has 4-step. (*full version only)
+- 3 different Body colours (*full version only)
+- Part Modeling for 2Axis
+- All turrets used only one material & texture. Each turret has its own UV for each color.
+
+*Note). Inside the turret prefab is a shot position and shot effect.
+If you don't need a shot position and a shot effect, remove it. (ShootPoint, FireFx)
+
+*If you have any questions or suggestions about the assets, please contact me.(id3644@gmail.com)
+
+Thank you for your purchase.
