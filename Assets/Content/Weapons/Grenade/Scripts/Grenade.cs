@@ -1,50 +1,62 @@
 using UnityEngine;
+using System.Collections;
 
 public class Grenade : MonoBehaviour
 {
     [Header("Explosion Settings")]
-    public float delay = 3f;                // Tiempo antes de explotar
+    public float delay = 3f;                // Tiempo total antes de explotar
     public float radius = 5f;               // Radio de daño/fuerza
     public float explosionForce = 700f;     // Fuerza de la onda expansiva
     public GameObject explosionEffect;      // Prefab del efecto visual
     public AudioClip explosionSound;        // Sonido de explosión
 
-    private float countdown;
     private bool hasExploded = false;
 
     void Start()
     {
-        countdown = delay;
+        StartCoroutine(ExplosionSequence());
     }
 
-    void Update()
+    IEnumerator ExplosionSequence()
     {
-        countdown -= Time.deltaTime;
+        // Espera hasta un segundo antes del estallido
+        yield return new WaitForSeconds(delay - 1f);
 
-        if (countdown <= 0f && !hasExploded)
+        if (explosionSound != null)
         {
-            Explode();
+            // Creamos un AudioSource configurado correctamente
+            GameObject soundObj = new GameObject("ExplosionSound");
+            soundObj.transform.position = transform.position;
+            AudioSource src = soundObj.AddComponent<AudioSource>();
+
+            src.clip = explosionSound;
+            src.volume = 1f;                // Volumen real (100%)
+            src.spatialBlend = 1f;          // 1 = completamente 3D
+            src.rolloffMode = AudioRolloffMode.Linear;
+            src.minDistance = 1f;           // Distancia mínima antes de bajar volumen
+            src.maxDistance = 500f;         // Que se escuche desde lejos
+            src.Play();
+
+            Destroy(soundObj, explosionSound.length); // limpiar después
         }
+
+        // Espera el último segundo antes de explotar visualmente
+        yield return new WaitForSeconds(1f);
+
+        Explode();
     }
 
     void Explode()
     {
+        if (hasExploded) return;
         hasExploded = true;
 
-        // Efecto visual
-       if (explosionEffect != null)
+        if (explosionEffect != null)
         {
             GameObject effect = Instantiate(explosionEffect, transform.position, transform.rotation);
-            Destroy(effect, 5f); 
+            Destroy(effect, 5f);
         }
 
-        // Sonido
-        if (explosionSound != null)
-        {
-            AudioSource.PlayClipAtPoint(explosionSound, transform.position);
-        }
-
-        // Detección de objetos cercanos
         Collider[] colliders = Physics.OverlapSphere(transform.position, radius);
         foreach (Collider nearby in colliders)
         {
@@ -55,7 +67,6 @@ public class Grenade : MonoBehaviour
             }
         }
 
-        // Destruir granada
         Destroy(gameObject);
     }
 
