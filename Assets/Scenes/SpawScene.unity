@@ -96,7 +96,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 112000000, guid: aff0f325697d91f438531c6f68689e7e,
+  m_LightingDataAsset: {fileID: 112000000, guid: 4bddbc6c3f3ba754e896e97a082ca073,
     type: 2}
   m_LightingSettings: {fileID: 4890085278179872738, guid: 13ce7981403bc0340aa555f602ebdeab,
     type: 2}
@@ -4803,7 +4803,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 2800
   m_UseColorTemperature: 1
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_BoundingSphereOverride: {x: 1.186021e+27, y: 1.1258679e+24, z: 2.817509e+20, w: 14299.25}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -8248,7 +8248,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 2800
   m_UseColorTemperature: 1
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_BoundingSphereOverride: {x: 1.02e-43, y: 7e-45, z: 5.126e-42, w: 9.403955e-38}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -8804,7 +8804,8 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 2800
   m_UseColorTemperature: 1
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_BoundingSphereOverride: {x: 1.8969988e+28, y: 5.6719438e-11, z: 1.759054e+22,
+    w: 2.147168e+29}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
@@ -10382,7 +10383,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 2800
   m_UseColorTemperature: 1
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_BoundingSphereOverride: {x: 1.02e-43, y: 1e-44, z: 4.336e-42, w: 1.6143e-41}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
