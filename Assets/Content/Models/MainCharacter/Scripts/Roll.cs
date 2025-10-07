@@ -6,12 +6,9 @@ public class Roll : MonoBehaviour
     private CharacterController controller;
 
     [Header("Roll Settings")]
-    public float rollSpeed = 6f;
-    public float rollDuration = 0.8f;
     public float rollCooldown = 0.2f;
     public float maskBlendSpeed = 6f;
-    public float rotationBlendSpeed = 6f;
-    public float returnBlendDuration = 0.25f; // tiempo para blend al idle
+    public float returnBlendDuration = 0.25f; // transición suave al idle
 
     private bool isRolling = false;
     private bool restoringMask = false;
@@ -34,7 +31,7 @@ public class Roll : MonoBehaviour
     {
         int upperBodyLayer = animator.GetLayerIndex("UpperBody");
 
-        // Suaviza el blend de la máscara
+        // 🔸 Blend suave para restaurar la máscara del cuerpo superior
         if (restoringMask)
         {
             upperBodyWeight = Mathf.Lerp(upperBodyWeight, 1f, Time.deltaTime * maskBlendSpeed);
@@ -47,11 +44,10 @@ public class Roll : MonoBehaviour
             }
         }
 
-        // Durante el roll
+        // 🔸 Durante el roll (movimiento controlado por Root Motion)
         if (isRolling)
         {
             rollTimer -= Time.deltaTime;
-            controller.Move(rollDirection * rollSpeed * Time.deltaTime);
 
             if (rollTimer <= 0f)
                 EndRoll();
@@ -59,7 +55,7 @@ public class Roll : MonoBehaviour
             return;
         }
 
-        // Durante el blend de retorno
+        // 🔸 Blend suave de rotación de vuelta al idle
         if (blendingBack)
         {
             blendTimer += Time.deltaTime / returnBlendDuration;
@@ -72,7 +68,7 @@ public class Roll : MonoBehaviour
             }
         }
 
-        // Inicia el roll
+        // 🔸 Inicia el roll
         if (Input.GetKeyDown(KeyCode.E))
             StartRoll();
     }
@@ -82,12 +78,11 @@ public class Roll : MonoBehaviour
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-        // Dirección basada en cámara, pero sin rotar el personaje
+        // Dirección basada en cámara
         Vector3 camForward = Camera.main.transform.forward;
         camForward.y = 0;
         Vector3 camRight = Camera.main.transform.right;
         camRight.y = 0;
-
         Vector3 moveDir = (camForward * v + camRight * h).normalized;
 
         if (moveDir.magnitude == 0)
@@ -95,9 +90,9 @@ public class Roll : MonoBehaviour
 
         rollDirection = moveDir;
 
-        // Guardamos rotación inicial y final (para suavizar después)
+        // Guardar rotaciones
         startRotation = transform.rotation;
-        endRotation = Quaternion.LookRotation(transform.forward); // no rota, mantiene forward
+        endRotation = Quaternion.LookRotation(transform.forward);
 
         // Apagar máscara superior
         int upperBodyLayer = animator.GetLayerIndex("UpperBody");
@@ -107,8 +102,17 @@ public class Roll : MonoBehaviour
         animator.ResetTrigger("Roll");
         animator.SetTrigger("Roll");
 
+        // 🔸 Activar root motion solo durante el roll
+        animator.applyRootMotion = true;
+
+        // Obtener duración del clip activo
+        float clipLength = 1f;
+        AnimatorClipInfo[] clipInfo = animator.GetCurrentAnimatorClipInfo(0);
+        if (clipInfo.Length > 0)
+            clipLength = clipInfo[0].clip.length;
+
+        rollTimer = clipLength + rollCooldown;
         isRolling = true;
-        rollTimer = rollDuration + rollCooldown;
     }
 
     void EndRoll()
@@ -116,12 +120,13 @@ public class Roll : MonoBehaviour
         isRolling = false;
         restoringMask = true;
         upperBodyWeight = 0f;
-
-        // Suavizar retorno al idle (blend)
         blendingBack = true;
         blendTimer = 0f;
 
-        // Blend suave hacia locomotion
+        // 🔸 Desactivar root motion al terminar
+        animator.applyRootMotion = false;
+
+        // 🔸 Transición suave a locomotion
         if (!animator.GetCurrentAnimatorStateInfo(0).IsName("RifleLocomotion"))
         {
             animator.CrossFadeInFixedTime("RifleLocomotion", returnBlendDuration);
