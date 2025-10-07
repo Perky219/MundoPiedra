@@ -6,56 +6,68 @@ public class Roll : MonoBehaviour
     private CharacterController controller;
 
     [Header("Roll Settings")]
+    public float rollSpeed = 6f;
+    public float rollMovePercent = 0.7f;
     public float rollCooldown = 0.2f;
     public float maskBlendSpeed = 6f;
-    public float returnBlendDuration = 0.25f; // transición suave al idle
+    public float returnBlendDuration = 0.25f;
+    public float maxRollFailsafe = 3.0f;
+
+    [Header("Animator States")]
+    public string rollStateName = "Roll";
+    public string locomotionStateName = "RifleLocomotion";
 
     private bool isRolling = false;
     private bool restoringMask = false;
     private bool blendingBack = false;
+    private bool inCooldown = false;
 
     private Vector3 rollDirection;
-    private float rollTimer = 0f;
     private float upperBodyWeight = 1f;
     private Quaternion startRotation;
     private Quaternion endRotation;
     private float blendTimer = 0f;
+    private float failsafeTimer = 0f;
+
+    private int upperBodyLayerIndex = -1;
 
     void Start()
     {
         animator = GetComponent<Animator>();
         controller = GetComponent<CharacterController>();
+        upperBodyLayerIndex = animator.GetLayerIndex("UpperBody");
     }
 
     void Update()
     {
-        int upperBodyLayer = animator.GetLayerIndex("UpperBody");
-
-        // 🔸 Blend suave para restaurar la máscara del cuerpo superior
-        if (restoringMask)
+        if (restoringMask && upperBodyLayerIndex >= 0)
         {
             upperBodyWeight = Mathf.Lerp(upperBodyWeight, 1f, Time.deltaTime * maskBlendSpeed);
-            animator.SetLayerWeight(upperBodyLayer, upperBodyWeight);
+            animator.SetLayerWeight(upperBodyLayerIndex, upperBodyWeight);
 
             if (upperBodyWeight > 0.98f)
             {
                 restoringMask = false;
-                animator.SetLayerWeight(upperBodyLayer, 1f);
+                animator.SetLayerWeight(upperBodyLayerIndex, 1f);
             }
         }
 
-        // 🔸 Durante el roll (movimiento controlado por Root Motion)
         if (isRolling)
         {
-            rollTimer -= Time.deltaTime;
+            AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(0);
+            bool inRollState = state.IsName(rollStateName);
 
-            if (rollTimer <= 0f)
+            if (inRollState && state.normalizedTime < rollMovePercent)
+                controller.Move(rollDirection * rollSpeed * Time.deltaTime);
+
+            failsafeTimer += Time.deltaTime;
+            bool finished = inRollState && state.normalizedTime >= 0.99f && !animator.IsInTransition(0);
+            if (finished || failsafeTimer >= maxRollFailsafe)
                 EndRoll();
 
             return;
         }
 
-        // 🔸 Blend suave de rotación de vuelta al idle
         if (blendingBack)
         {
             blendTimer += Time.deltaTime / returnBlendDuration;
@@ -68,8 +80,7 @@ public class Roll : MonoBehaviour
             }
         }
 
-        // 🔸 Inicia el roll
-        if (Input.GetKeyDown(KeyCode.E))
+        if (!inCooldown && !isRolling && Input.GetKeyDown(KeyCode.Space))
             StartRoll();
     }
 
@@ -78,60 +89,55 @@ public class Roll : MonoBehaviour
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-        // Dirección basada en cámara
-        Vector3 camForward = Camera.main.transform.forward;
-        camForward.y = 0;
-        Vector3 camRight = Camera.main.transform.right;
-        camRight.y = 0;
-        Vector3 moveDir = (camForward * v + camRight * h).normalized;
+        Vector3 camF = Camera.main.transform.forward; camF.y = 0;
+        Vector3 camR = Camera.main.transform.right;   camR.y = 0;
+        Vector3 moveDir = (camF * v + camR * h).normalized;
+        if (moveDir.sqrMagnitude < 0.0001f) moveDir = transform.forward;
 
-        if (moveDir.magnitude == 0)
-            moveDir = transform.forward;
+        rollDirection = moveDir.normalized;
 
-        rollDirection = moveDir;
-
-        // Guardar rotaciones
         startRotation = transform.rotation;
-        endRotation = Quaternion.LookRotation(transform.forward);
+        endRotation = Quaternion.LookRotation(rollDirection);
+        transform.rotation = endRotation;
 
-        // Apagar máscara superior
-        int upperBodyLayer = animator.GetLayerIndex("UpperBody");
-        if (upperBodyLayer >= 0)
-            animator.SetLayerWeight(upperBodyLayer, 0);
+        if (upperBodyLayerIndex >= 0)
+        {
+            upperBodyWeight = 0f;
+            animator.SetLayerWeight(upperBodyLayerIndex, 0f);
+        }
 
         animator.ResetTrigger("Roll");
         animator.SetTrigger("Roll");
 
-        // 🔸 Activar root motion solo durante el roll
-        animator.applyRootMotion = true;
-
-        // Obtener duración del clip activo
-        float clipLength = 1f;
-        AnimatorClipInfo[] clipInfo = animator.GetCurrentAnimatorClipInfo(0);
-        if (clipInfo.Length > 0)
-            clipLength = clipInfo[0].clip.length;
-
-        rollTimer = clipLength + rollCooldown;
         isRolling = true;
+        blendingBack = false;
+        restoringMask = false;
+        inCooldown = true;
+        failsafeTimer = 0f;
     }
 
     void EndRoll()
     {
         isRolling = false;
         restoringMask = true;
-        upperBodyWeight = 0f;
         blendingBack = true;
         blendTimer = 0f;
 
-        // 🔸 Desactivar root motion al terminar
-        animator.applyRootMotion = false;
+        animator.ResetTrigger("Roll");
 
-        // 🔸 Transición suave a locomotion
-        if (!animator.GetCurrentAnimatorStateInfo(0).IsName("RifleLocomotion"))
+        AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(0);
+        if (!state.IsName(locomotionStateName))
         {
-            animator.CrossFadeInFixedTime("RifleLocomotion", returnBlendDuration);
+            animator.CrossFadeInFixedTime(locomotionStateName, returnBlendDuration);
         }
 
-        animator.ResetTrigger("Roll");
+        Invoke(nameof(ReleaseCooldown), rollCooldown);
+    }
+
+    void ReleaseCooldown()
+    {
+        inCooldown = false;
+        if (upperBodyLayerIndex >= 0) animator.SetLayerWeight(upperBodyLayerIndex, 1f);
+        upperBodyWeight = 1f;
     }
 }
