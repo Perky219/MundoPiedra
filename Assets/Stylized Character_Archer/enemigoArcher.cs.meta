@@ -6,6 +6,9 @@ MonoImporter:
   defaultReferences:
   - animator: {instanceID: 0}
   - jugador: {instanceID: 0}
+  - proyectilPrefab: {fileID: 1337024436769953104, guid: 01372e2815129ca4a9eb1bbb79cb15ca,
+      type: 3}
+  - puntoDisparo: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

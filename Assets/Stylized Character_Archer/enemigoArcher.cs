@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Enemigo : MonoBehaviour
+public class EnemigoArcher : MonoBehaviour
 {
     // --- Tu lógica existente ---
     public int rutina;
@@ -21,7 +21,7 @@ public class Enemigo : MonoBehaviour
     public float distanciaDeteccion = 12f;     // radio de detección (m)
 
     [Header("Campo de visión (solo delante)")]
-    [Range(0f, 360f)] public float fov = 110f; // ancho del cono de visión (grados)
+    [Range(0f, 360f)] public float fov = 100f; // ancho del cono de visión (grados)
     public float alturaOjos = 1.6f;            // punto desde donde “mira” el enemigo
 
     [Header("Giros y movimiento")]
