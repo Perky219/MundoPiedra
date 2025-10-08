@@ -6,8 +6,8 @@ public class Roll : MonoBehaviour
     private CharacterController controller;
 
     [Header("Roll Settings")]
-    public float rollSpeed = 6f;
-    public float rollMovePercent = 0.7f;
+    public float rollSpeed = 1.2f;          // velocidad reducida
+    public float rollMovePercent = 0.55f;   // reduce cuánto avanza en la animación
     public float rollCooldown = 0.2f;
     public float maskBlendSpeed = 6f;
     public float returnBlendDuration = 0.25f;
@@ -17,18 +17,16 @@ public class Roll : MonoBehaviour
     public string rollStateName = "Roll";
     public string locomotionStateName = "RifleLocomotion";
 
+    [Header("References")]
+    public GameObject weaponObject; // Rifle_Caliber_5_56
+
     private bool isRolling = false;
     private bool restoringMask = false;
-    private bool blendingBack = false;
     private bool inCooldown = false;
 
     private Vector3 rollDirection;
     private float upperBodyWeight = 1f;
-    private Quaternion startRotation;
-    private Quaternion endRotation;
-    private float blendTimer = 0f;
     private float failsafeTimer = 0f;
-
     private int upperBodyLayerIndex = -1;
 
     void Start()
@@ -40,6 +38,7 @@ public class Roll : MonoBehaviour
 
     void Update()
     {
+        // Suavizado de máscara superior al restaurar
         if (restoringMask && upperBodyLayerIndex >= 0)
         {
             upperBodyWeight = Mathf.Lerp(upperBodyWeight, 1f, Time.deltaTime * maskBlendSpeed);
@@ -52,6 +51,7 @@ public class Roll : MonoBehaviour
             }
         }
 
+        // Mientras rueda
         if (isRolling)
         {
             AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(0);
@@ -68,18 +68,7 @@ public class Roll : MonoBehaviour
             return;
         }
 
-        if (blendingBack)
-        {
-            blendTimer += Time.deltaTime / returnBlendDuration;
-            transform.rotation = Quaternion.Slerp(startRotation, endRotation, blendTimer);
-
-            if (blendTimer >= 1f)
-            {
-                blendingBack = false;
-                transform.rotation = endRotation;
-            }
-        }
-
+        // Inicia roll con barra espaciadora
         if (!inCooldown && !isRolling && Input.GetKeyDown(KeyCode.Space))
             StartRoll();
     }
@@ -96,9 +85,9 @@ public class Roll : MonoBehaviour
 
         rollDirection = moveDir.normalized;
 
-        startRotation = transform.rotation;
-        endRotation = Quaternion.LookRotation(rollDirection);
-        transform.rotation = endRotation;
+        // Solo rota hacia la dirección del roll, sin guardar rotación previa
+        if (rollDirection.sqrMagnitude > 0.01f)
+            transform.rotation = Quaternion.LookRotation(rollDirection);
 
         if (upperBodyLayerIndex >= 0)
         {
@@ -109,8 +98,11 @@ public class Roll : MonoBehaviour
         animator.ResetTrigger("Roll");
         animator.SetTrigger("Roll");
 
+        // Oculta el arma al iniciar el roll
+        if (weaponObject != null)
+            weaponObject.SetActive(false);
+
         isRolling = true;
-        blendingBack = false;
         restoringMask = false;
         inCooldown = true;
         failsafeTimer = 0f;
@@ -120,8 +112,6 @@ public class Roll : MonoBehaviour
     {
         isRolling = false;
         restoringMask = true;
-        blendingBack = true;
-        blendTimer = 0f;
 
         animator.ResetTrigger("Roll");
 
@@ -130,6 +120,10 @@ public class Roll : MonoBehaviour
         {
             animator.CrossFadeInFixedTime(locomotionStateName, returnBlendDuration);
         }
+
+        // Reactiva el arma al terminar el roll
+        if (weaponObject != null)
+            weaponObject.SetActive(true);
 
         Invoke(nameof(ReleaseCooldown), rollCooldown);
     }
