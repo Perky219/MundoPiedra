@@ -4,7 +4,7 @@ public class SimpleBullet : MonoBehaviour
 {
     public float speed = 40f;
     public float lifeTime = 5f;
-    public float damage = 10f; // Daño que inflige el proyectil
+    public float damage = 25f; // sigue siendo float por flexibilidad
     public GameObject destroyEffect;
 
     private Rigidbody rb;
@@ -18,13 +18,15 @@ public class SimpleBullet : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        // Buscar si el objeto golpeado tiene componente de salud
+        // Intenta obtener el componente de salud
         Health targetHealth = collision.gameObject.GetComponent<Health>();
         if (targetHealth != null)
         {
-            targetHealth.TakeDamage(damage);
+            // Convierte el daño a int antes de pasarlo al método
+            targetHealth.TakeDamage(Mathf.RoundToInt(damage));
         }
 
+        // Efecto visual al destruirse
         if (destroyEffect != null)
         {
             Instantiate(destroyEffect, transform.position, Quaternion.identity);
