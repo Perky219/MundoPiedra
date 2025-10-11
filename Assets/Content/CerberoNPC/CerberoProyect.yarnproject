@@ -1,0 +1,14 @@
+{
+  "projectFileVersion": 3,
+  "sourceFiles": [
+    "IntroCerbero.yarn"
+  ],
+  "excludeFiles": [
+    "**/*~/*",
+    "./Samples/Yarn Spinner*/*"
+  ],
+  "localisation": {},
+  "baseLanguage": "es",
+  "compilerOptions": {},
+  "definitionsFiles": []
+}
