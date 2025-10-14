@@ -7,6 +7,6 @@ namespace Game.Config
     {
         [Header("Nombres exactos como están en Build Settings")]
         public string mainMenuSceneName = "MainMenu";
-        public string gameSceneName = "GameScene";
+        public string gameSceneName = "SpawScene";
     }
 }
