@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 5def0b56d7848ce4cbe33dc2b9bebf4d
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - animator: {instanceID: 0}
+  - jugador: {fileID: 583091413269648081, guid: 3a6605468740d41a0ae0df8631d645e9,
+      type: 3}
+  - proyectilPrefab: {fileID: 1337024436769953104, guid: 01372e2815129ca4a9eb1bbb79cb15ca,
+      type: 3}
+  - puntoDisparo: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
