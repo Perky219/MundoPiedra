@@ -1,5 +1,6 @@
 using UnityEngine;
-using UnityEngine.UI; // mostar vida, próximo sprint
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class Health : MonoBehaviour
 {
@@ -8,7 +9,7 @@ public class Health : MonoBehaviour
     public int currentHP;
 
     [Header("UI opcional")]
-    public Slider healthBar; 
+    public Slider healthBar;
 
     void Start()
     {
@@ -19,6 +20,8 @@ public class Health : MonoBehaviour
     public void TakeDamage(int dmg)
     {
         currentHP -= dmg;
+        if (currentHP < 0) currentHP = 0;
+
         UpdateUI();
 
         if (currentHP <= 0)
@@ -29,7 +32,7 @@ public class Health : MonoBehaviour
 
     void UpdateUI()
     {
-        if (healthBar)
+        if (healthBar != null)
         {
             healthBar.value = (float)currentHP / maxHP;
         }
@@ -38,8 +41,20 @@ public class Health : MonoBehaviour
     void Die()
     {
         Debug.Log($"{gameObject.name} ha muerto");
-        // Aquí puedes reproducir animación o desactivar controles
-        gameObject.SetActive(false);
+
+        if (CompareTag("Player"))
+        {
+            // Por si el juego estaba en pausa
+            Time.timeScale = 1f;
+
+            // Volver al menú principal (asegúrate que la escena se llama así)
+            SceneManager.LoadScene("MainMenu");
+        }
+        else
+        {
+            // Enemigos u otros objetos
+            gameObject.SetActive(false);
+        }
     }
 }
 
