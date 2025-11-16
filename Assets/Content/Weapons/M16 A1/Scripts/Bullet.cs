@@ -21,7 +21,8 @@ public class SimpleBullet : MonoBehaviour
         Health targetHealth = other.GetComponent<Health>();
         if (targetHealth != null)
         {
-            targetHealth.TakeDamage(Mathf.RoundToInt(baseDamage));
+            float finalDamage = baseDamage * PlayerStats.Instance.damageMultiplier;
+            targetHealth.TakeDamage(Mathf.RoundToInt(finalDamage));
         }
 
         if (destroyEffect != null)
