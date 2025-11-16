@@ -12,6 +12,9 @@ public class WeaponShoot : MonoBehaviour
 
     private void Update()
     {
+        if (GameState.isCardUIOpen)
+            return;
+
         if (Mouse.current.leftButton.wasPressedThisFrame) // Click izquierdo
         {
             Shoot();
