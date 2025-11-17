@@ -2,26 +2,37 @@ using UnityEngine;
 
 public class SimpleBullet : MonoBehaviour
 {
+    public float baseDamage = 1f;
     public float speed = 40f;
     public float lifeTime = 5f;
+    public float damage = 25f; // sigue siendo float por flexibilidad
     public GameObject destroyEffect;
 
     private Rigidbody rb;
 
-    private void Start()
+    void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.velocity = transform.forward * speed;
         Destroy(gameObject, lifeTime);
     }
 
-    private void OnCollisionEnter(Collision collision)
+    void OnTriggerEnter(Collider other)
     {
-        if (destroyEffect != null)
-        {
-            Instantiate(destroyEffect, transform.position, Quaternion.identity);
-        }
+        Health targetHealth = other.GetComponent<Health>();
 
-        Destroy(gameObject);
+        if (targetHealth != null)
+        {
+            float finalDamage = baseDamage * PlayerStats.Instance.damageMultiplier;
+            targetHealth.TakeDamage(Mathf.RoundToInt(finalDamage));
+
+            if (!PlayerStats.Instance.hasPiercing)
+                Destroy(gameObject);
+
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 }

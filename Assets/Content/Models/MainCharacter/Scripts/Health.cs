@@ -13,28 +13,37 @@ public class Health : MonoBehaviour
 
     void Start()
     {
-        currentHP = maxHP;
-        UpdateUI();
-    }
+        [Header("Vida")]
+        public int maxHP = 15;
+        public int currentHP;
 
-    public void TakeDamage(int dmg)
-    {
-        currentHP -= dmg;
-        UpdateUI();
+        [Header("UI opcional")]
+        public Slider healthBar;
 
-        if (currentHP <= 0)
+        void Start()
         {
-            Die();
+            currentHP = maxHP;
+            UpdateUI();
         }
-    }
 
-    void UpdateUI()
-    {
-        if (healthBar)
+        public void TakeDamage(int dmg)
         {
-            healthBar.value = (float)currentHP / maxHP;
+            currentHP -= dmg;
+            UpdateUI();
+
+            if (currentHP <= 0)
+            {
+                Die();
+            }
         }
-    }
+
+        void UpdateUI()
+        {
+            if (healthBar)
+            {
+                healthBar.value = (float)currentHP / maxHP;
+            }
+        }
 
     void Die()
     {
