@@ -1,6 +1,6 @@
 using UnityEngine;
-using UnityEngine.UI; // mostar vida, próximo sprint
-using UnityEngine.SceneManagement;   //  NUEVO
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class Health : MonoBehaviour
 {
@@ -13,37 +13,28 @@ public class Health : MonoBehaviour
 
     void Start()
     {
-        [Header("Vida")]
-        public int maxHP = 15;
-        public int currentHP;
+        currentHP = maxHP;
+        UpdateUI();
+    }
 
-        [Header("UI opcional")]
-        public Slider healthBar;
+    public void TakeDamage(int dmg)
+    {
+        currentHP -= dmg;
+        UpdateUI();
 
-        void Start()
+        if (currentHP <= 0)
         {
-            currentHP = maxHP;
-            UpdateUI();
+            Die();
         }
+    }
 
-        public void TakeDamage(int dmg)
+    void UpdateUI()
+    {
+        if (healthBar)
         {
-            currentHP -= dmg;
-            UpdateUI();
-
-            if (currentHP <= 0)
-            {
-                Die();
-            }
+            healthBar.value = (float)currentHP / maxHP;
         }
-
-        void UpdateUI()
-        {
-            if (healthBar)
-            {
-                healthBar.value = (float)currentHP / maxHP;
-            }
-        }
+    }
 
     void Die()
     {
@@ -52,14 +43,11 @@ public class Health : MonoBehaviour
         if (CompareTag("Player"))
         {
             Time.timeScale = 1f;
-
-            // Ir a la escena de Game Over
-            SceneManager.LoadScene("GameOverScene"); 
+            SceneManager.LoadScene("GameOverScene");
         }
         else
         {
-            // Enemigos u otros objetos siguen igual que antes
             gameObject.SetActive(false);
-        }
-    }
+        }
+    }
 }
