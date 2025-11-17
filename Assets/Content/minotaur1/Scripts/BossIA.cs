@@ -10,13 +10,13 @@ public class BossAI : MonoBehaviour
 
     [Header("Movimiento")]
     public float walkSpeed = 1.5f;
-    public float runSpeed  = 3.5f;
+    public float runSpeed = 3.5f;
     public float turnSpeed = 3f;
 
-    [Header("Combate")]
+    [Header("Ataque")]
     public float attackRange = 2.2f;
-    public float attackCooldown = 2.0f;
-    public float attackActiveTime = 0.5f;
+    public float attackCooldown = 2f;
+    public float attackActiveTime = 0.5f; // ventana del golpe
 
     [Header("Pathfinding")]
     public float repathInterval = 0.3f;
@@ -27,75 +27,61 @@ public class BossAI : MonoBehaviour
 
     static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
     static readonly int IsRunningHash = Animator.StringToHash("IsRunning");
-    static readonly int AttackHash    = Animator.StringToHash("Attack");
+    static readonly int AttackHash = Animator.StringToHash("Attack");
 
     float nextRepathTime;
     float nextAttackTime;
+
     public bool IsAttackActive { get; private set; }
+    public bool hasDealtDamageThisSwing = false;
 
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         anim = GetComponent<Animator>();
         phaseController = GetComponent<BossPhaseController>();
+
+        // Buscar player automáticamente si no fue asignado
+        if (!target)
+        {
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p) target = p.transform;
+        }
     }
 
     void Start()
     {
-            // Si no se asignó manualmente en el inspector,
-    // intenta buscar al jugador por la tag "Player"
-        if (!target)
-        {
-            GameObject p = GameObject.FindGameObjectWithTag("Player");
-            if (p)
-            {
-                target = p.transform;
-            }
-            else
-            {
-                Debug.LogWarning("BossAI: No se encontró ningún objeto con tag 'Player'.");
-            }
-        }
         if (anim) anim.applyRootMotion = false;
 
-        if (agent)
+        if (agent && !agent.isOnNavMesh)
         {
-            agent.stoppingDistance = Mathf.Max(0.1f, attackRange - 0.3f);
-
-            if (!agent.isOnNavMesh &&
-                NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
-            {
+            if (NavMesh.SamplePosition(transform.position, out var hit, 2f, NavMesh.AllAreas))
                 agent.Warp(hit.position);
-            }
         }
+        agent.stoppingDistance = attackRange - 0.3f;
     }
 
     void Update()
     {
-        if (!target)
-        {
-            SetMoving(false);
-            SetRunning(false);
-            return;
-        }
+        if (!target) return;
 
         float dist = Vector3.Distance(transform.position, target.position);
 
-        // Elegir velocidad según fase (camina o corre)
-        if (phaseController != null && phaseController.CanRun())
+        // CAMINAR O CORRER SEGÚN FASE
+        if (phaseController.CanRun())
         {
             agent.speed = runSpeed;
-            SetRunning(true);
+            anim.SetBool(IsRunningHash, true);
         }
         else
         {
             agent.speed = walkSpeed;
-            SetRunning(false);
+            anim.SetBool(IsRunningHash, false);
         }
 
+        // MOVIMIENTO
         if (dist > attackRange)
         {
-            // Moverse hacia el jugador
             agent.isStopped = false;
 
             if (Time.time >= nextRepathTime)
@@ -104,27 +90,20 @@ public class BossAI : MonoBehaviour
                 agent.SetDestination(target.position);
             }
 
-            SetMoving(agent.velocity.sqrMagnitude > 0.01f);
+            anim.SetBool(IsMovingHash, agent.velocity.sqrMagnitude > 0.01f);
         }
         else
         {
-            // Detenerse y atacar
+            // DETENERSE Y ATACAR
             agent.isStopped = true;
-            SetMoving(false);
+            anim.SetBool(IsMovingHash, false);
 
-            // Mirar al jugador
-            Vector3 to = target.position - transform.position;
-            to.y = 0f;
-            if (to.sqrMagnitude > 0.0001f)
-            {
-                transform.rotation = Quaternion.Slerp(
-                    transform.rotation,
-                    Quaternion.LookRotation(to),
-                    turnSpeed * Time.deltaTime
-                );
-            }
+            // rotación suave hacia el jugador
+            Vector3 dir = target.position - transform.position;
+            dir.y = 0;
+            if (dir.sqrMagnitude > 0.01f)
+                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), turnSpeed * Time.deltaTime);
 
-            // Ataque básico cuerpo a cuerpo
             if (Time.time >= nextAttackTime)
             {
                 StartCoroutine(DoAttackWindow());
@@ -133,27 +112,15 @@ public class BossAI : MonoBehaviour
         }
     }
 
+    // Ventana de ataque
     System.Collections.IEnumerator DoAttackWindow()
     {
-        anim?.SetTrigger(AttackHash);
+        anim.SetTrigger(AttackHash);
         IsAttackActive = true;
+        hasDealtDamageThisSwing = false;
+
         yield return new WaitForSeconds(attackActiveTime);
+
         IsAttackActive = false;
-    }
-
-    void SetMoving(bool m)
-    {
-        if (anim) anim.SetBool(IsMovingHash, m);
-    }
-
-    void SetRunning(bool r)
-    {
-        if (anim) anim.SetBool(IsRunningHash, r);
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.color = new Color(1, 0, 0, 0.35f);
-        Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }
