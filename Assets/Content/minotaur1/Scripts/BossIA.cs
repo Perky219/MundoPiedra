@@ -42,6 +42,20 @@ public class BossAI : MonoBehaviour
 
     void Start()
     {
+            // Si no se asignó manualmente en el inspector,
+    // intenta buscar al jugador por la tag "Player"
+        if (!target)
+        {
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p)
+            {
+                target = p.transform;
+            }
+            else
+            {
+                Debug.LogWarning("BossAI: No se encontró ningún objeto con tag 'Player'.");
+            }
+        }
         if (anim) anim.applyRootMotion = false;
 
         if (agent)

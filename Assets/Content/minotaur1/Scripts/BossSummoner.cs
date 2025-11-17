@@ -19,9 +19,25 @@ public class BossSummoner : MonoBehaviour
 
     List<GameObject> activeExplosives = new List<GameObject>();
     float nextSummonTime;
+    void Start()
+    {
+        if (!player)
+        {
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p)
+            {
+                player = p.transform;
+            }
+            else
+            {
+                Debug.LogWarning("BossSummoner: No se encontró ningún objeto con tag 'Player'.");
+            }
+        }
+    }
 
     void Awake()
     {
+        
         phaseController = GetComponent<BossPhaseController>();
     }
 
