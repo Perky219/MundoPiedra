@@ -6,19 +6,19 @@ using UnityEngine.InputSystem;
 public class WeaponShoot : MonoBehaviour
 {
     [Header("Weapon Setup")]
-    public GameObject bulletPrefab;   // Prefab de la bala
-    public Transform muzzlePoint;     // Boquilla del rifle
-    public float bulletSpeed = 40f;
+    public GameObject bulletPrefab;
+    public Transform muzzlePoint;
 
-    private void Update()
+    [HideInInspector]
+    public float bulletSpeed = 20f;
+
+    void Update()
     {
         if (GameState.isCardUIOpen)
             return;
 
-        if (Mouse.current.leftButton.wasPressedThisFrame) // Click izquierdo
-        {
+        if (Mouse.current.leftButton.wasPressedThisFrame)
             Shoot();
-        }
     }
 
     void Shoot()
@@ -29,21 +29,16 @@ public class WeaponShoot : MonoBehaviour
             return;
         }
 
-        // Instanciar la bala en la posición y rotación del muzzle
         GameObject bullet = Instantiate(bulletPrefab, muzzlePoint.position, muzzlePoint.rotation);
 
-        // Darle velocidad en la dirección hacia la que apunta el muzzle
-        Rigidbody rb = bullet.GetComponent<Rigidbody>();
-        if (rb != null)
+        SimpleBullet sb = bullet.GetComponent<SimpleBullet>();
+        if (sb != null)
         {
-            rb.velocity = muzzlePoint.forward * bulletSpeed;
+            sb.speed = bulletSpeed + PlayerStats.Instance.extraBulletSpeed;
         }
 
-        // Sonido desde el arma (muzzle)
         AudioSource audio = muzzlePoint.GetComponent<AudioSource>();
         if (audio != null)
-        {
             audio.Play();
-        }
     }
 }
