@@ -20,17 +20,19 @@ public class SimpleBullet : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         Health targetHealth = other.GetComponent<Health>();
+
         if (targetHealth != null)
         {
             float finalDamage = baseDamage * PlayerStats.Instance.damageMultiplier;
             targetHealth.TakeDamage(Mathf.RoundToInt(finalDamage));
-        }
 
-        if (destroyEffect != null)
+            if (!PlayerStats.Instance.hasPiercing)
+                Destroy(gameObject);
+
+        }
+        else
         {
-            Instantiate(destroyEffect, transform.position, Quaternion.identity);
+            Destroy(gameObject);
         }
-
-        Destroy(gameObject);
     }
 }

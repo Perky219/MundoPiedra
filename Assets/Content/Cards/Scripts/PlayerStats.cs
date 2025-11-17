@@ -6,7 +6,7 @@ public class PlayerStats : MonoBehaviour
 
     public float damageMultiplier = 1f;
     public float fireRateMultiplier = 1f;
-    public float piercingMultiplier = 1f;
+    public bool hasPiercing = false;
 
     void Awake()
     {
@@ -28,9 +28,10 @@ public class PlayerStats : MonoBehaviour
         Debug.Log("Nuevo multiplicador de cadencia: " + fireRateMultiplier);
     }
 
-    public void IncreasePiercing(float amount)
+    public void EnablePiercing()
     {
-        piercingMultiplier += amount;
-        Debug.Log("Nuevo multiplicador de penetración: " + piercingMultiplier);
+        hasPiercing = true;
+        Debug.Log("Piercing activado");
     }
+
 }
