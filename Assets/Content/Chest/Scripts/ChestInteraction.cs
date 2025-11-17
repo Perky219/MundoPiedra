@@ -3,6 +3,8 @@ using UnityEngine;
 public class ChestInteraction : MonoBehaviour
 {
     public Animator animator;
+    public GameObject cardsUI;
+
     private bool isPlayerNearby = false;
     private bool isOpen = false;
 
@@ -12,6 +14,16 @@ public class ChestInteraction : MonoBehaviour
         {
             animator.SetTrigger("Open");
             isOpen = true;
+
+            if (cardsUI != null)
+            {
+                cardsUI.SetActive(true);
+
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+
+                GameState.isCardUIOpen = true;
+            }
         }
     }
 

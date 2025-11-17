@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class SimpleBullet : MonoBehaviour
 {
+    public float baseDamage = 1f;
     public float speed = 40f;
     public float lifeTime = 5f;
     public float damage = 25f; // sigue siendo float por flexibilidad
@@ -9,24 +10,22 @@ public class SimpleBullet : MonoBehaviour
 
     private Rigidbody rb;
 
-    private void Start()
+    void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.velocity = transform.forward * speed;
         Destroy(gameObject, lifeTime);
     }
 
-    private void OnCollisionEnter(Collision collision)
+    void OnTriggerEnter(Collider other)
     {
-        // Intenta obtener el componente de salud
-        Health targetHealth = collision.gameObject.GetComponent<Health>();
+        Health targetHealth = other.GetComponent<Health>();
         if (targetHealth != null)
         {
-            // Convierte el daño a int antes de pasarlo al método
-            targetHealth.TakeDamage(Mathf.RoundToInt(damage));
+            float finalDamage = baseDamage * PlayerStats.Instance.damageMultiplier;
+            targetHealth.TakeDamage(Mathf.RoundToInt(finalDamage));
         }
 
-        // Efecto visual al destruirse
         if (destroyEffect != null)
         {
             Instantiate(destroyEffect, transform.position, Quaternion.identity);
