@@ -5,7 +5,7 @@ public class PlayerStats : MonoBehaviour
     public static PlayerStats Instance;
 
     public float damageMultiplier = 1f;
-    public float fireRateMultiplier = 1f;
+    public float extraBulletSpeed = 0f;
     public bool hasPiercing = false;
 
     void Awake()
@@ -22,10 +22,10 @@ public class PlayerStats : MonoBehaviour
         Debug.Log("Nuevo multiplicador de daño: " + damageMultiplier);
     }
 
-    public void IncreaseFireRate(float amount)
+    public void AddBulletSpeed(float amount)
     {
-        fireRateMultiplier += amount;
-        Debug.Log("Nuevo multiplicador de cadencia: " + fireRateMultiplier);
+        extraBulletSpeed += amount;
+        Debug.Log("Nueva velocidad extra de bala: " + extraBulletSpeed);
     }
 
     public void EnablePiercing()
@@ -33,5 +33,4 @@ public class PlayerStats : MonoBehaviour
         hasPiercing = true;
         Debug.Log("Piercing activado");
     }
-
 }
