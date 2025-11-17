@@ -5,6 +5,7 @@ public class SimpleBullet : MonoBehaviour
     public float baseDamage = 1f;
     public float speed = 40f;
     public float lifeTime = 5f;
+    public float damage = 25f; // sigue siendo float por flexibilidad
     public GameObject destroyEffect;
 
     private Rigidbody rb;
