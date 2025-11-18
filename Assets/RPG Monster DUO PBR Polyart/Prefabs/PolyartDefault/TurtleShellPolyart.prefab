@@ -894,6 +894,7 @@ GameObject:
   - component: {fileID: 6265206175713501824}
   - component: {fileID: 5162232971360506}
   - component: {fileID: 1135334662843163897}
+  - component: {fileID: 3921227065285501897}
   m_Layer: 0
   m_Name: TurtleShellPolyart
   m_TagString: Untagged
@@ -958,6 +959,21 @@ MonoBehaviour:
   moveSpeed: 3
   attackCooldown: 1.5
   damage: 10
+--- !u!114 &3921227065285501897
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6753617674297473082}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0ef0d1d21cfe014581e858dcbdb86ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHP: 5
+  currentHP: 0
+  healthBar: {fileID: 0}
 --- !u!1 &6861681153245785469
 GameObject:
   m_ObjectHideFlags: 0
