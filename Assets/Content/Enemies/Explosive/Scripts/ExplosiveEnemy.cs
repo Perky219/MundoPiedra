@@ -8,7 +8,7 @@ public class ExplosiveEnemy : MonoBehaviour
     public bool fightStarted = false;
 
     [Header("Ataque explosivo")]
-    public float chaseSpeed = 2.5f;
+    public float chaseSpeed = 10f;
     public float explosionDistance = 1.5f; // distancia para iniciar cuenta regresiva
     public float explosionDelay = 2f;
 
