@@ -10,14 +10,19 @@ public class ThrowGrenade : MonoBehaviour
     public Transform throwPoint;
     public float throwForce = 10f;
 
-    [Tooltip("Tiempo (segundos) antes de lanzar la granada después de iniciar la animación")]
-    public float throwDelay = 2.03f; // Tiempo del frame 61
+    public float throwDelay = 2.03f;
 
     private Animator animator;
+
+    // UI
+    public GrenadeUI grenadeUI;
 
     private void Start()
     {
         animator = GetComponent<Animator>();
+
+        if (grenadeUI != null)
+            grenadeUI.SetThrowing(false);
     }
 
     private void Update()
@@ -29,6 +34,10 @@ public class ThrowGrenade : MonoBehaviour
 #endif
         {
             animator.SetTrigger("Throw");
+
+            if (grenadeUI != null)
+                grenadeUI.SetThrowing(true);
+
             StartCoroutine(ThrowGrenadeAfterDelay());
         }
     }
@@ -39,9 +48,13 @@ public class ThrowGrenade : MonoBehaviour
 
         GameObject grenade = Instantiate(grenadePrefab, throwPoint.position, throwPoint.rotation);
         Rigidbody rb = grenade.GetComponent<Rigidbody>();
+
         if (rb != null)
         {
             rb.AddForce(throwPoint.forward * throwForce, ForceMode.VelocityChange);
         }
+
+        if (grenadeUI != null)
+            grenadeUI.SetThrowing(false);
     }
 }
