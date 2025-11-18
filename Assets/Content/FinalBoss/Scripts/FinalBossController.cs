@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using TMPro;
 
 public class FinalBossController : MonoBehaviour
 {
@@ -11,15 +13,23 @@ public class FinalBossController : MonoBehaviour
     public float moveSpeed = 3f;
 
     [Header("Invocación de minions")]
-    public GameObject minionPrefab;      // prefab de TurtleShell
-    public Transform[] summonPoints;     // puntos hijos del Hunter
-    public float firstSummonDelay = 3f;  // tiempo antes de la primera invocación
-    public float summonCooldown = 10f;   // tiempo entre invocaciones
-    public int minionsPerWave = 2;       // cuántos minions por invocación
-    public int maxMinionsAlive = 4;      // límite total en escena
+    public GameObject minionPrefab;
+    public Transform[] summonPoints;
+    public float firstSummonDelay = 3f;
+    public float summonCooldown = 10f;
+    public int minionsPerWave = 2;
+    public int maxMinionsAlive = 4;
+
+    [Header("Intro de diálogo")]
+    public Canvas dialogueCanvas;
+    public TMP_Text dialogueText;
+    public float timeBetweenLines = 2.5f;
 
     float nextSummonTime = 0f;
     int currentMinions = 0;
+
+    bool introPlayed = false;
+    bool introPlaying = false;
 
     void Start()
     {
@@ -29,8 +39,10 @@ public class FinalBossController : MonoBehaviour
         if (!player)
             player = GameObject.FindGameObjectWithTag("Player")?.transform;
 
-        // primera invocación dentro de X segundos
         nextSummonTime = Time.time + firstSummonDelay;
+
+        if (dialogueCanvas != null)
+            dialogueCanvas.gameObject.SetActive(false);
     }
 
     void Update()
@@ -39,16 +51,23 @@ public class FinalBossController : MonoBehaviour
 
         float dist = Vector3.Distance(transform.position, player.position);
 
+        if (!introPlayed && dist <= detectionRange)
+        {
+            introPlayed = true;
+            StartCoroutine(PlayIntroDialogue());
+        }
+
+        if (introPlaying)
+            return;
+
         if (dist <= detectionRange)
         {
-            // --- Movimiento hacia el jugador ---
             animator.SetBool("Idle", false);
             animator.SetBool("IsWalking", true);
 
             Vector3 dir = player.position - transform.position;
             dir.y = 0f;
 
-            // Evitar LookRotation con vector cero
             if (dir.sqrMagnitude > 0.0001f)
             {
                 dir.Normalize();
@@ -56,15 +75,41 @@ public class FinalBossController : MonoBehaviour
                 transform.rotation = Quaternion.LookRotation(dir);
             }
 
-            // --- Lógica de invocación mientras está en combate ---
             HandleSummon();
         }
         else
         {
-            // fuera de rango: idle
             animator.SetBool("IsWalking", false);
             animator.SetBool("Idle", true);
         }
+    }
+
+    IEnumerator PlayIntroDialogue()
+    {
+        introPlaying = true;
+
+        if (dialogueCanvas != null)
+            dialogueCanvas.gameObject.SetActive(true);
+
+        string[] lines =
+        {
+            "Llevo mucho tiempo esperando, insecto...",
+            "¿De verdad crees que vas a vencerme? JA, JA, JA... qué inepto.",
+            "Bien... vamos a verlo."
+        };
+
+        foreach (string line in lines)
+        {
+            if (dialogueText != null)
+                dialogueText.text = line;
+
+            yield return new WaitForSeconds(timeBetweenLines);
+        }
+
+        if (dialogueCanvas != null)
+            dialogueCanvas.gameObject.SetActive(false);
+
+        introPlaying = false;
     }
 
     void HandleSummon()
@@ -74,23 +119,24 @@ public class FinalBossController : MonoBehaviour
         if (Time.time < nextSummonTime) return;
         if (currentMinions >= maxMinionsAlive) return;
 
-        // programar la siguiente invocación
         nextSummonTime = Time.time + summonCooldown;
 
-        // instanciar una "oleada" de minions
         for (int i = 0; i < minionsPerWave; i++)
         {
             if (currentMinions >= maxMinionsAlive) break;
 
-            int index = i % summonPoints.Length;   // usa puntos en orden
+            int index = i % summonPoints.Length;
             Transform spawnPoint = summonPoints[index];
 
-            Instantiate(minionPrefab, spawnPoint.position, spawnPoint.rotation);
+            GameObject minion = Instantiate(minionPrefab, spawnPoint.position, spawnPoint.rotation);
             currentMinions++;
+
+            var minionAI = minion.GetComponent<MinionMeleeAI>();
+            if (minionAI != null)
+                minionAI.target = player;
         }
     }
 
-    // lo usaremos cuando los minions tengan vida y mueran
     public void MinionDied()
     {
         currentMinions = Mathf.Max(0, currentMinions - 1);
