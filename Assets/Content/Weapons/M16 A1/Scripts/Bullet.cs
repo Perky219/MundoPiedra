@@ -19,6 +19,14 @@ public class SimpleBullet : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        // 1) Ignorar otras balas
+        if (other.GetComponent<SimpleBullet>() != null)
+            return;
+
+        // 2) (opcional pero recomendado) ignorar al player
+        if (other.CompareTag("Player"))
+            return;
+            
         Health targetHealth = other.GetComponent<Health>();
 
         if (targetHealth != null)

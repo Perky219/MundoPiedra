@@ -7,6 +7,7 @@ public class PlayerStats : MonoBehaviour
     public float damageMultiplier = 1f;
     public float extraBulletSpeed = 0f;
     public bool hasPiercing = false;
+    public bool hasMultiShot = false;
 
     void Awake()
     {
@@ -32,5 +33,11 @@ public class PlayerStats : MonoBehaviour
     {
         hasPiercing = true;
         Debug.Log("Piercing activado");
+    }
+
+    public void EnableMultiShot()
+    {
+        hasMultiShot = true;
+        Debug.Log("MultiShot activado");
     }
 }
