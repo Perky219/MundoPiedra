@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Content/Models/MainCharacter/Character/Animations/Rifle/RifleMask.mask.meta
+guid: d9cb6f824f82f9e4ba29df4cc9cec420
+========
+guid: f7209c3c4f61ead4eab26e10a069d275
+>>>>>>>> db7f2dde8aaf67ef8068242b943546b49b8bac79:Assets/Content/Stylized Character_Archer/Scenes/Demo_Character/Global Volume Profile.asset.meta
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 31900000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
