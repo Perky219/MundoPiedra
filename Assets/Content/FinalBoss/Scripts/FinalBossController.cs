@@ -18,8 +18,15 @@ public class FinalBossController : MonoBehaviour
     public int minionsPerWave = 2;       // cuántos minions por invocación
     public int maxMinionsAlive = 4;      // límite total en escena
 
+    [Header("Ataque cuerpo a cuerpo")]
+    public float attackRange = 2.5f;     // distancia para “golpear”
+    public float attackCooldown = 1.0f;  // tiempo entre golpes
+    public int damagePerHit = 1;         // 1 de daño → 5 golpes si el player tiene 5HP
+
     float nextSummonTime = 0f;
     int currentMinions = 0;
+
+    float nextAttackTime = 0f;
 
     void Start()
     {
@@ -48,7 +55,6 @@ public class FinalBossController : MonoBehaviour
             Vector3 dir = player.position - transform.position;
             dir.y = 0f;
 
-            // Evitar LookRotation con vector cero
             if (dir.sqrMagnitude > 0.0001f)
             {
                 dir.Normalize();
@@ -56,14 +62,34 @@ public class FinalBossController : MonoBehaviour
                 transform.rotation = Quaternion.LookRotation(dir);
             }
 
-            // --- Lógica de invocación mientras está en combate ---
+            // --- Ataque si está lo bastante cerca ---
+            if (dist <= attackRange)
+            {
+                TryAttackPlayer();
+            }
+
+            // --- Invocación de minions ---
             HandleSummon();
         }
         else
         {
-            // fuera de rango: idle
             animator.SetBool("IsWalking", false);
             animator.SetBool("Idle", true);
+        }
+    }
+
+    void TryAttackPlayer()
+    {
+        if (Time.time < nextAttackTime) return;
+        nextAttackTime = Time.time + attackCooldown;
+
+        if (!player) return;
+
+        var hp = player.GetComponent<Health>();
+        if (hp != null)
+        {
+            hp.TakeDamage(damagePerHit);
+            Debug.Log($"Boss golpea al jugador. Daño: {damagePerHit}");
         }
     }
 
@@ -74,15 +100,13 @@ public class FinalBossController : MonoBehaviour
         if (Time.time < nextSummonTime) return;
         if (currentMinions >= maxMinionsAlive) return;
 
-        // programar la siguiente invocación
         nextSummonTime = Time.time + summonCooldown;
 
-        // instanciar una "oleada" de minions
         for (int i = 0; i < minionsPerWave; i++)
         {
             if (currentMinions >= maxMinionsAlive) break;
 
-            int index = i % summonPoints.Length;   // usa puntos en orden
+            int index = i % summonPoints.Length;
             Transform spawnPoint = summonPoints[index];
 
             Instantiate(minionPrefab, spawnPoint.position, spawnPoint.rotation);
@@ -90,7 +114,6 @@ public class FinalBossController : MonoBehaviour
         }
     }
 
-    // lo usaremos cuando los minions tengan vida y mueran
     public void MinionDied()
     {
         currentMinions = Mathf.Max(0, currentMinions - 1);
