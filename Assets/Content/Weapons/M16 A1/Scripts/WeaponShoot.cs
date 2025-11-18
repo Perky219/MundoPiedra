@@ -29,16 +29,47 @@ public class WeaponShoot : MonoBehaviour
             return;
         }
 
-        GameObject bullet = Instantiate(bulletPrefab, muzzlePoint.position, muzzlePoint.rotation);
+        if (PlayerStats.Instance.hasMultiShot)
+        {
+            ShootMultishot();
+        }
+        else
+        {
+            ShootSingle();
+        }
+
+        AudioSource audio = muzzlePoint.GetComponent<AudioSource>();
+        if (audio != null)
+            audio.Play();
+    }
+
+    void ShootSingle()
+    {
+        CreateBullet(muzzlePoint.rotation);
+    }
+
+    void ShootMultishot()
+    {
+        float angle = 10f; // puedes cambiar esto si quieres más separación
+
+        // Bala central
+        CreateBullet(muzzlePoint.rotation);
+
+        // Bala izquierda
+        CreateBullet(Quaternion.Euler(0, -angle, 0) * muzzlePoint.rotation);
+
+        // Bala derecha
+        CreateBullet(Quaternion.Euler(0, angle, 0) * muzzlePoint.rotation);
+    }
+
+    void CreateBullet(Quaternion rotation)
+    {
+        GameObject bullet = Instantiate(bulletPrefab, muzzlePoint.position, rotation);
 
         SimpleBullet sb = bullet.GetComponent<SimpleBullet>();
         if (sb != null)
         {
             sb.speed = bulletSpeed + PlayerStats.Instance.extraBulletSpeed;
         }
-
-        AudioSource audio = muzzlePoint.GetComponent<AudioSource>();
-        if (audio != null)
-            audio.Play();
     }
 }
