@@ -25,6 +25,11 @@ public class FinalBossController : MonoBehaviour
     public TMP_Text dialogueText;
     public float timeBetweenLines = 2.5f;
 
+    [Header("Ataque cuerpo a cuerpo")]
+    public float attackRange = 2.5f;     // distancia para “golpear”
+    public float attackCooldown = 1.0f;  // tiempo entre golpes
+    public int damagePerHit = 1;         // 1 de daño → 5 golpes si el player tiene 5HP
+
     float nextSummonTime = 0f;
     int currentMinions = 0;
 

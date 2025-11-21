@@ -7,13 +7,12 @@ public class MinionMeleeAI : MonoBehaviour
     public Transform target;          // normalmente el Player
 
     [Header("Movimiento")]
-    public float detectionRange = 15f;
-    public float stopDistance = 2.5f;
     public float moveSpeed = 3f;
+    public float stopDistance = 2.5f; // distancia para dejar de caminar y atacar
 
     [Header("Ataque")]
-    public float attackCooldown = 1.5f;
-    public int damage = 10; // ajusta según la vida del jugador
+    public float attackCooldown = 1.2f;
+    public int damage = 1;            // daño que hace cada minion
 
     float nextAttackTime = 0f;
 
@@ -22,6 +21,7 @@ public class MinionMeleeAI : MonoBehaviour
         if (!animator)
             animator = GetComponent<Animator>();
 
+        // backup por si acaso
         if (!target)
             target = GameObject.FindGameObjectWithTag("Player")?.transform;
     }
@@ -32,46 +32,27 @@ public class MinionMeleeAI : MonoBehaviour
 
         float dist = Vector3.Distance(transform.position, target.position);
 
-        // Fuera de rango → idle
-        if (dist > detectionRange)
-        {
-            animator.CrossFade("IdleNormal", 0.1f);
-            return;
-        }
-
-        // Dirección hacia el jugador (solo en XZ)
+        // dirección solo en XZ
         Vector3 dir = target.position - transform.position;
         dir.y = 0f;
 
-        // si el vector es casi cero, no intentamos mover ni rotar
         if (dir.sqrMagnitude < 0.0001f)
-        {
-            if (dist <= stopDistance)
-            {
-                animator.CrossFade("Attack01", 0.1f);
-                TryAttack();
-            }
-            else
-            {
-                animator.CrossFade("IdleNormal", 0.1f);
-            }
             return;
-        }
 
         dir.Normalize();
 
         if (dist > stopDistance)
         {
             // Caminar hacia el jugador
-            animator.CrossFade("WalkFWD", 0.1f);
+            if (animator) animator.CrossFade("WalkFWD", 0.1f);
+
             transform.position += dir * moveSpeed * Time.deltaTime;
             transform.rotation = Quaternion.LookRotation(dir);
         }
         else
         {
-            // Atacar cuando está cerca
-            animator.CrossFade("Attack01", 0.1f);
-            transform.rotation = Quaternion.LookRotation(dir);
+            // Atacar cuando está lo bastante cerca
+            if (animator) animator.CrossFade("Attack01", 0.1f);
             TryAttack();
         }
     }
@@ -83,10 +64,12 @@ public class MinionMeleeAI : MonoBehaviour
 
         if (!target) return;
 
-        var hp = target.GetComponent<Health>();
+        // MISMO SISTEMA QUE EL BOSS: Health del Player
+        Health hp = target.GetComponent<Health>();
         if (hp != null)
         {
             hp.TakeDamage(damage);
+            Debug.Log($"{name} golpea al jugador y hace {damage} de daño");
         }
     }
 }

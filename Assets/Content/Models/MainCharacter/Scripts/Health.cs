@@ -1,5 +1,6 @@
 using UnityEngine;
-using UnityEngine.UI; // mostar vida, próximo sprint
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class Health : MonoBehaviour
 {
@@ -8,7 +9,7 @@ public class Health : MonoBehaviour
     public int currentHP;
 
     [Header("UI opcional")]
-    public Slider healthBar; 
+    public Slider healthBar;
 
     void Start()
     {
@@ -38,8 +39,15 @@ public class Health : MonoBehaviour
     void Die()
     {
         Debug.Log($"{gameObject.name} ha muerto");
-        // Aquí puedes reproducir animación o desactivar controles
-        gameObject.SetActive(false);
-    }
-}
 
+        if (CompareTag("Player"))
+        {
+            Time.timeScale = 1f;
+            SceneManager.LoadScene("GameOverScene");
+        }
+        else
+        {
+            gameObject.SetActive(false);
+        }
+    }
+}
