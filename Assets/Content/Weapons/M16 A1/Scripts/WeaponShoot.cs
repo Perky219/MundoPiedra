@@ -6,16 +6,19 @@ using UnityEngine.InputSystem;
 public class WeaponShoot : MonoBehaviour
 {
     [Header("Weapon Setup")]
-    public GameObject bulletPrefab;   // Prefab de la bala
-    public Transform muzzlePoint;     // Boquilla del rifle
-    public float bulletSpeed = 40f;
+    public GameObject bulletPrefab;
+    public Transform muzzlePoint;
 
-    private void Update()
+    [HideInInspector]
+    public float bulletSpeed = 20f;
+
+    void Update()
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame) // Click izquierdo
-        {
+        if (GameState.isCardUIOpen)
+            return;
+
+        if (Mouse.current.leftButton.wasPressedThisFrame)
             Shoot();
-        }
     }
 
     void Shoot()
@@ -26,21 +29,47 @@ public class WeaponShoot : MonoBehaviour
             return;
         }
 
-        // Instanciar la bala en la posición y rotación del muzzle
-        GameObject bullet = Instantiate(bulletPrefab, muzzlePoint.position, muzzlePoint.rotation);
-
-        // Darle velocidad en la dirección hacia la que apunta el muzzle
-        Rigidbody rb = bullet.GetComponent<Rigidbody>();
-        if (rb != null)
+        if (PlayerStats.Instance.hasMultiShot)
         {
-            rb.velocity = muzzlePoint.forward * bulletSpeed;
+            ShootMultishot();
+        }
+        else
+        {
+            ShootSingle();
         }
 
-        // Sonido desde el arma (muzzle)
         AudioSource audio = muzzlePoint.GetComponent<AudioSource>();
         if (audio != null)
-        {
             audio.Play();
+    }
+
+    void ShootSingle()
+    {
+        CreateBullet(muzzlePoint.rotation);
+    }
+
+    void ShootMultishot()
+    {
+        float angle = 10f; // puedes cambiar esto si quieres más separación
+
+        // Bala central
+        CreateBullet(muzzlePoint.rotation);
+
+        // Bala izquierda
+        CreateBullet(Quaternion.Euler(0, -angle, 0) * muzzlePoint.rotation);
+
+        // Bala derecha
+        CreateBullet(Quaternion.Euler(0, angle, 0) * muzzlePoint.rotation);
+    }
+
+    void CreateBullet(Quaternion rotation)
+    {
+        GameObject bullet = Instantiate(bulletPrefab, muzzlePoint.position, rotation);
+
+        SimpleBullet sb = bullet.GetComponent<SimpleBullet>();
+        if (sb != null)
+        {
+            sb.speed = bulletSpeed + PlayerStats.Instance.extraBulletSpeed;
         }
     }
 }
