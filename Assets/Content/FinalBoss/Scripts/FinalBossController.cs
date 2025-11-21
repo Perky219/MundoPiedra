@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using TMPro;
 
 public class FinalBossController : MonoBehaviour
 {
@@ -11,12 +13,17 @@ public class FinalBossController : MonoBehaviour
     public float moveSpeed = 3f;
 
     [Header("Invocación de minions")]
-    public GameObject minionPrefab;      // prefab de TurtleShell
-    public Transform[] summonPoints;     // puntos hijos del Hunter
-    public float firstSummonDelay = 3f;  // tiempo antes de la primera invocación
-    public float summonCooldown = 10f;   // tiempo entre invocaciones
-    public int minionsPerWave = 2;       // cuántos minions por invocación
-    public int maxMinionsAlive = 4;      // límite total en escena
+    public GameObject minionPrefab;
+    public Transform[] summonPoints;
+    public float firstSummonDelay = 3f;
+    public float summonCooldown = 10f;
+    public int minionsPerWave = 2;
+    public int maxMinionsAlive = 4;
+
+    [Header("Intro de diálogo")]
+    public Canvas dialogueCanvas;
+    public TMP_Text dialogueText;
+    public float timeBetweenLines = 2.5f;
 
     [Header("Ataque cuerpo a cuerpo")]
     public float attackRange = 2.5f;     // distancia para “golpear”
@@ -26,7 +33,8 @@ public class FinalBossController : MonoBehaviour
     float nextSummonTime = 0f;
     int currentMinions = 0;
 
-    float nextAttackTime = 0f;
+    bool introPlayed = false;
+    bool introPlaying = false;
 
     void Start()
     {
@@ -36,8 +44,10 @@ public class FinalBossController : MonoBehaviour
         if (!player)
             player = GameObject.FindGameObjectWithTag("Player")?.transform;
 
-        // primera invocación dentro de X segundos
         nextSummonTime = Time.time + firstSummonDelay;
+
+        if (dialogueCanvas != null)
+            dialogueCanvas.gameObject.SetActive(false);
     }
 
     void Update()
@@ -46,9 +56,17 @@ public class FinalBossController : MonoBehaviour
 
         float dist = Vector3.Distance(transform.position, player.position);
 
+        if (!introPlayed && dist <= detectionRange)
+        {
+            introPlayed = true;
+            StartCoroutine(PlayIntroDialogue());
+        }
+
+        if (introPlaying)
+            return;
+
         if (dist <= detectionRange)
         {
-            // --- Movimiento hacia el jugador ---
             animator.SetBool("Idle", false);
             animator.SetBool("IsWalking", true);
 
@@ -62,13 +80,6 @@ public class FinalBossController : MonoBehaviour
                 transform.rotation = Quaternion.LookRotation(dir);
             }
 
-            // --- Ataque si está lo bastante cerca ---
-            if (dist <= attackRange)
-            {
-                TryAttackPlayer();
-            }
-
-            // --- Invocación de minions ---
             HandleSummon();
         }
         else
@@ -78,19 +89,32 @@ public class FinalBossController : MonoBehaviour
         }
     }
 
-    void TryAttackPlayer()
+    IEnumerator PlayIntroDialogue()
     {
-        if (Time.time < nextAttackTime) return;
-        nextAttackTime = Time.time + attackCooldown;
+        introPlaying = true;
 
-        if (!player) return;
+        if (dialogueCanvas != null)
+            dialogueCanvas.gameObject.SetActive(true);
 
-        var hp = player.GetComponent<Health>();
-        if (hp != null)
+        string[] lines =
         {
-            hp.TakeDamage(damagePerHit);
-            Debug.Log($"Boss golpea al jugador. Daño: {damagePerHit}");
+            "Llevo mucho tiempo esperando, insecto...",
+            "¿De verdad crees que vas a vencerme? JA, JA, JA... qué inepto.",
+            "Bien... vamos a verlo."
+        };
+
+        foreach (string line in lines)
+        {
+            if (dialogueText != null)
+                dialogueText.text = line;
+
+            yield return new WaitForSeconds(timeBetweenLines);
         }
+
+        if (dialogueCanvas != null)
+            dialogueCanvas.gameObject.SetActive(false);
+
+        introPlaying = false;
     }
 
     void HandleSummon()
@@ -109,8 +133,12 @@ public class FinalBossController : MonoBehaviour
             int index = i % summonPoints.Length;
             Transform spawnPoint = summonPoints[index];
 
-            Instantiate(minionPrefab, spawnPoint.position, spawnPoint.rotation);
+            GameObject minion = Instantiate(minionPrefab, spawnPoint.position, spawnPoint.rotation);
             currentMinions++;
+
+            var minionAI = minion.GetComponent<MinionMeleeAI>();
+            if (minionAI != null)
+                minionAI.target = player;
         }
     }
 
