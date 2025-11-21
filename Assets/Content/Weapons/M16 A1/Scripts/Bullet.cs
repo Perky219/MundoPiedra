@@ -2,26 +2,45 @@ using UnityEngine;
 
 public class SimpleBullet : MonoBehaviour
 {
-    public float speed = 40f;
+    [Header("Bullet Setup")]
+    public float baseDamage = 1f;
+    public float speed = 10f;
     public float lifeTime = 5f;
     public GameObject destroyEffect;
 
     private Rigidbody rb;
 
-    private void Start()
+    void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.velocity = transform.forward * speed;
         Destroy(gameObject, lifeTime);
     }
 
-    private void OnCollisionEnter(Collision collision)
+    void OnTriggerEnter(Collider other)
     {
-        if (destroyEffect != null)
-        {
-            Instantiate(destroyEffect, transform.position, Quaternion.identity);
-        }
+        // 1) Ignorar otras balas
+        if (other.GetComponent<SimpleBullet>() != null)
+            return;
 
-        Destroy(gameObject);
+        // 2) (opcional pero recomendado) ignorar al player
+        if (other.CompareTag("Player"))
+            return;
+            
+        Health targetHealth = other.GetComponent<Health>();
+
+        if (targetHealth != null)
+        {
+            float finalDamage = baseDamage * PlayerStats.Instance.damageMultiplier;
+            targetHealth.TakeDamage(Mathf.RoundToInt(finalDamage));
+
+            if (!PlayerStats.Instance.hasPiercing)
+                Destroy(gameObject);
+
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 }
