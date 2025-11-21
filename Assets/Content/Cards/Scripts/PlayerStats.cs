@@ -20,15 +20,7 @@ public class PlayerStats : MonoBehaviour
         else
             Destroy(gameObject);
     }
-
-    void Start()
-    {
-        FindObjectOfType<UpgradesUIManager>().AddUpgrade(damageSprite);
-        FindObjectOfType<UpgradesUIManager>().AddUpgrade(multishotSprite);
-        FindObjectOfType<UpgradesUIManager>().AddUpgrade(piercingSprite);
-        FindObjectOfType<UpgradesUIManager>().AddUpgrade(speedSprite);
-    }
-
+    
     public void IncreaseDamage(float amount)
     {
         damageMultiplier += amount;
