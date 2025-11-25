@@ -4,16 +4,18 @@ using System.Collections;
 public class SpawnDoorBattle : MonoBehaviour
 {
     [Header("Prefabs y posiciones")]
-    [SerializeField] private GameObject doorPrefab;      // Prefab de la puerta que se instanciará
-    [SerializeField] private Transform doorSpawnPoint;   // Punto donde aparecerá la puerta
+    [SerializeField] private GameObject doorPrefab;          // Prefab de la puerta
+    [SerializeField] private Transform doorSpawnPoint;       // Punto donde aparece la puerta
 
-    [Header("Simulación de combate")]
-    [SerializeField] private float battleDurationSeconds = 8f;  // Duración del “combate”
-    [SerializeField] private Vector3 openMoveOffset = new Vector3(0, 2f, 0); // Movimiento al abrirse
+    [Header("Boss")]
+    [SerializeField] private GameObject bossObject;          // Jefe ya existente en la escena (desactivado al inicio)
+
+    [Header("Apertura de puerta")]
+    [SerializeField] private Vector3 openMoveOffset = new Vector3(0, 2f, 0);
     [SerializeField] private float moveSpeed = 2f;
 
     [Header("Comportamiento")]
-    [SerializeField] private bool oneShot = true;  // Si está activado, solo se ejecuta una vez
+    [SerializeField] private bool oneShot = true;
 
     [Header("Debug")]
     [SerializeField] private bool logVerbose = true;
@@ -32,24 +34,16 @@ public class SpawnDoorBattle : MonoBehaviour
         if (oneShot && triggered) return;
         if (!other.CompareTag("Player")) return;
 
-        // Validaciones básicas
         if (doorPrefab == null)
         {
             Debug.LogError("[SpawnDoorBattle] doorPrefab no asignado.");
             return;
         }
+
         if (doorSpawnPoint == null)
         {
             Debug.LogError("[SpawnDoorBattle] doorSpawnPoint no asignado.");
             return;
-        }
-
-        // Aviso sobre Rigidbody (necesario para triggers)
-        if (other.attachedRigidbody == null && GetComponent<Rigidbody>() == null)
-        {
-            Debug.LogWarning("[SpawnDoorBattle] Ni el Player ni el Trigger tienen Rigidbody. " +
-                             "OnTriggerEnter puede no disparar en algunos setups. " +
-                             "Pon Rigidbody (Kinematic) en el Player o en este trigger.");
         }
 
         triggered = true;
@@ -58,50 +52,85 @@ public class SpawnDoorBattle : MonoBehaviour
 
     private IEnumerator RoomSequenceRealtime()
     {
-        // 1) Spawnea la puerta
+        Debug.Log(">>> [DEBUG] Entrando a RoomSequenceRealtime");
+
+        // Info de referencias
+        Debug.Log(">>> [DEBUG] doorPrefab = " + doorPrefab);
+        Debug.Log(">>> [DEBUG] doorSpawnPoint = " + doorSpawnPoint);
+        Debug.Log(">>> [DEBUG] bossObject = " + bossObject);
+
+        // 1. Instanciar puerta
         spawnedDoor = Instantiate(doorPrefab, doorSpawnPoint.position, doorSpawnPoint.rotation);
-        if (logVerbose) Debug.Log("[SpawnDoorBattle] Puerta instanciada en " + doorSpawnPoint.position);
+        Debug.Log(">>> [DEBUG] Puerta instanciada: " + spawnedDoor);
+        Debug.Log(">>> [DEBUG] Posición inicial puerta: " + spawnedDoor.transform.position);
 
-        // 2) Simula la batalla (tiempo real)
-        float t0 = Time.realtimeSinceStartup;
-        float tEnd = t0 + Mathf.Max(0f, battleDurationSeconds);
-        if (logVerbose) Debug.Log("[SpawnDoorBattle] Simulando batalla por " + battleDurationSeconds + "s (realtime).");
+        // 2. Activar boss
+        if (bossObject != null)
+        {
+            Debug.Log(">>> [DEBUG] Activando boss...");
+            bossObject.SetActive(true);
+            Debug.Log(">>> [DEBUG] bossObject.activeSelf = " + bossObject.activeSelf);
+        }
+        else
+        {
+            Debug.LogWarning(">>> [DEBUG] bossObject es NULL. No hay combate.");
+        }
 
-        while (Time.realtimeSinceStartup < tEnd)
+        // 3. Esperar hasta que el boss muera/desaparezca
+        Debug.Log(">>> [DEBUG] Esperando muerte del boss...");
+
+        int loops = 0;
+        while (bossObject != null && bossObject.activeInHierarchy)
+        {
+            loops++;
+            if (loops % 60 == 0)
+                Debug.Log(">>> [DEBUG] Boss sigue vivo...");
             yield return null;
+        }
 
-        // 3) Mueve o destruye la puerta al terminar
+        Debug.Log(">>> [DEBUG] Boss derrotado.");
+
+        // 4. Mover y destruir puerta
         if (spawnedDoor != null)
         {
+            Debug.Log(">>> [DEBUG] Abriendo puerta...");
             Vector3 target = spawnedDoor.transform.position + openMoveOffset;
             yield return MoveDoorRealtime(spawnedDoor, target);
 
-            if (logVerbose) Debug.Log("[SpawnDoorBattle] Batalla terminada. Puerta abierta y destruida.");
+            Debug.Log(">>> [DEBUG] Destruyendo puerta...");
             Destroy(spawnedDoor);
         }
+        else
+        {
+            Debug.LogWarning(">>> [DEBUG] No hay puerta para abrir/destruir");
+        }
 
-        if (!oneShot) triggered = false;  // Si no es “solo una vez”, permite reactivarlo
+        Debug.Log(">>> [DEBUG] Secuencia finalizada.");
+
+        if (!oneShot) triggered = false;
     }
 
     private IEnumerator MoveDoorRealtime(GameObject door, Vector3 target)
     {
-        // Movimiento independiente de Time.timeScale
+        Debug.Log(">>> [DEBUG] Moviendo puerta hacia " + target);
+
         while (door != null && Vector3.Distance(door.transform.position, target) > 0.01f)
         {
             float step = moveSpeed * Time.unscaledDeltaTime;
             door.transform.position = Vector3.MoveTowards(door.transform.position, target, step);
             yield return null;
         }
+
+        Debug.Log(">>> [DEBUG] Puerta alcanzó destino.");
     }
 
-#if UNITY_EDITOR
-    private void OnDrawGizmosSelected()
+    // Dibujar el punto de spawn en la escena
+    private void OnDrawGizmos()
     {
-        if (doorSpawnPoint != null)
-        {
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawWireCube(doorSpawnPoint.position, Vector3.one * 0.5f);
-        }
+        if (doorSpawnPoint == null) return;
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawSphere(doorSpawnPoint.position, 0.2f);
+        Gizmos.DrawWireCube(doorSpawnPoint.position, new Vector3(1, 2, 0.1f));
     }
-#endif
 }
