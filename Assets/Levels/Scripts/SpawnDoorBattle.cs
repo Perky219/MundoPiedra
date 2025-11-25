@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class SpawnDoorBattle : MonoBehaviour
 {
@@ -16,6 +17,10 @@ public class SpawnDoorBattle : MonoBehaviour
 
     [Header("Comportamiento")]
     [SerializeField] private bool oneShot = true;
+
+    [Header("Transición de escena")]
+    [SerializeField] private string nextSceneName = "WinScene";  // <- poné aquí el nombre exacto de la escena
+    [SerializeField] private float delayBeforeSceneLoad = 2f; // segundos antes de cambiar
 
     private GameObject spawnedDoor;
     private bool triggered;
@@ -47,7 +52,7 @@ public class SpawnDoorBattle : MonoBehaviour
         if (bossObject != null)
             bossObject.SetActive(true);
 
-        // 3. Esperar hasta que el boss muera / desaparezca
+        // 3. Esperar hasta que el boss muera
         while (bossObject != null && bossObject.activeInHierarchy)
             yield return null;
 
@@ -58,6 +63,13 @@ public class SpawnDoorBattle : MonoBehaviour
             yield return MoveDoorRealtime(spawnedDoor, target);
             Destroy(spawnedDoor);
         }
+
+        // 5. Espera antes de cargar el siguiente nivel
+        yield return new WaitForSeconds(delayBeforeSceneLoad);
+
+        // 6. Cargar siguiente nivel
+        if (!string.IsNullOrEmpty(nextSceneName))
+            SceneManager.LoadScene(nextSceneName);
 
         if (!oneShot) triggered = false;
     }
